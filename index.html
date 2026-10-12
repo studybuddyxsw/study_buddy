@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyBuddy - ผู้ช่วยวางแผนอ่านหนังสือก่อนสอบ จัดการเวลาพิชิตทุกสนามสอบ</title>
+  <meta name="description" content="แอป StudyBuddy ผู้ช่วยวางแผนอ่านหนังสือก่อนสอบ จัดการเวลา นับถอยหลัง D-Day นาฬิกา Pomodoro แฟลชการ์ด และคอมมูนิตี้แลกเปลี่ยน">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- App Header & Navigation Bar -->
+  <header class="app-header">
+    <div class="nav-container">
+      <div class="brand-section">
+        <div class="brand-logo-icon">
+          <i data-lucide="book-open-check"></i>
+        </div>
+        <div class="brand-titles">
+          <h1 class="brand-name">StudyBuddy</h1>
+          <span class="brand-tagline">ผู้ช่วยวางแผนอ่านหนังสือก่อนสอบ</span>
+        </div>
+      </div>
+
+      <!-- Main Navigation Tabs (2 Tabs Only) -->
+      <nav class="nav-tabs" aria-label="แถบเมนูหลัก">
+        <button class="nav-tab-btn active" data-tab="tab-dashboard" id="btn-tab-dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>หน้าหลัก</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="tab-planner" id="btn-tab-planner">
+          <i data-lucide="calendar-range"></i>
+          <span>หน้าสรุป & สถิติ</span>
+        </button>
+      </nav>
+
+      <!-- Header Utilities -->
+      <div class="header-actions">
+        <!-- Study Streak Counter -->
+        <div class="streak-pill" id="streak-badge-container" title="จำนวนวันที่อ่านหนังสือต่อเนื่อง">
+          <i data-lucide="flame" class="streak-flame"></i>
+          <span id="streak-count-text">อ่านต่อเนื่อง 5 วัน</span>
+        </div>
+
+        <!-- Ambient Sound Generator Toggle -->
+        <button class="audio-soundscape-btn" id="btn-toggle-ambient" title="เปิด/ปิด คลื่นเสียงสร้างสมาธิ">
+          <i data-lucide="headphones" id="icon-ambient-status"></i>
+          <span id="text-ambient-status">เสียงสมาธิ: ปิด</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Shell -->
+  <main class="main-content">
+    
+    <!-- Hero / Motivation Banner -->
+    <section class="hero-banner">
+      <div class="hero-content">
+        <h2 class="hero-title">แอป "StudyBuddy" ผู้ช่วยวางแผนอ่านหนังสือก่อนสอบ มหาวิทยาลัย (Final Exam Planner)</h2>
+        <p class="hero-subtitle">"เพราะคะแนนสอบที่ดี ไม่ได้มาจากความกดดัน แต่มาจากการวางแผนและวินัยที่สม่ำเสมอ"</p>
+      </div>
+
+      <!-- Daily Motivation Banner Strip -->
+      <div class="motivation-strip">
+        <div class="quote-wrapper">
+          <i data-lucide="quote" class="quote-icon"></i>
+          <div>
+            <span class="quote-text" id="motivation-quote-text">"ก้าวเล็กๆ ในการอ่านหนังสือทุกวัน รวมกันเป็นความสำเร็จที่ยิ่งใหญ่ในห้องสอบ"</span>
+            <span class="quote-author" id="motivation-quote-author">— เทคนิคพิชิตฝัน</span>
+          </div>
+        </div>
+        <button class="refresh-quote-btn" id="btn-refresh-quote" title="เปลี่ยนข้อความฮีลใจ">
+          <i data-lucide="refresh-cw"></i>
+          <span>เติมพลังใจ</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         TAB 1: หน้าหลัก (DASHBOARD)
+         ====================================================================== -->
+    <div class="tab-view active" id="tab-dashboard">
+      <div class="bento-grid">
+        
+        <!-- Pillar 1 Bento: D-Day Countdown -->
+        <div class="bento-card col-7" id="card-dday-countdown">
+          <div class="card-header">
+            <div class="card-title-group">
+              <div class="card-icon-badge badge-indigo">
+                <i data-lucide="alarm-clock"></i>
+              </div>
+              <div>
+                <h3 class="card-title">นับถอยหลังสู่วันสอบ (D-Day Countdown)</h3>
+                <p class="card-subtitle">เกาะติดกำหนดสอบจริงและระดับความพร้อมรายวิชา</p>
+              </div>
+            </div>
+            <button class="card-action-btn" id="btn-open-add-exam-modal">
+              <i data-lucide="plus-circle" style="width: 15px; height: 15px; display: inline-block; vertical-align: middle;"></i>
+              เพิ่มวันสอบ
+            </button>
+          </div>
+
+          <div class="dday-list" id="dday-exams-container">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+
+        <!-- Pillar 2 Bento: Pomodoro Focus Timer (ขนาดย่อในหน้าหลัก) -->
+        <div class="bento-card col-5">
+          <div class="card-header">
+            <div class="card-title-group">
+              <div class="card-icon-badge badge-violet">
+                <i data-lucide="timer"></i>
+              </div>
+              <div>
+                <h3 class="card-title">นาฬิกาโฟกัส (Pomodoro)</h3>
+                <p class="card-subtitle">เทคนิคอ่าน 25 นาที / พัก 5 นาที เพิ่มสมาธิขั้นสุด</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="pomodoro-compact-widget">
+            <!-- Mode Switcher -->
+            <div class="pomo-mode-selector">
+              <button class="pomo-mode-btn active" data-pomo-mode="focus">โฟกัส 25 นาที</button>
+              <button class="pomo-mode-btn" data-pomo-mode="short-break">พักสั้น 5 นาที</button>
+              <button class="pomo-mode-btn" data-pomo-mode="long-break">พักยาว 15 นาที</button>
+            </div>
+
+            <!-- Circular SVG Timer Display -->
+            <div class="timer-display-ring-container">
+              <svg class="timer-svg" viewBox="0 0 200 200">
+                <circle class="timer-circle-bg" cx="100" cy="100" r="88"></circle>
+                <circle class="timer-circle-progress" id="timer-progress-circle" cx="100" cy="100" r="88" stroke-dasharray="552.92" stroke-dashoffset="0"></circle>
+              </svg>
+              <div class="timer-center-content">
+                <span class="timer-time-digits mono-num" id="pomodoro-time-display">25:00</span>
+                <span class="timer-status-text" id="pomodoro-status-text">พร้อมเริ่มอ่าน</span>
+              </div>
+            </div>
+
+            <!-- Controls Row -->
+            <div class="timer-controls-row">
+              <button class="btn-primary-action" id="btn-pomo-toggle">
+                <i data-lucide="play" id="icon-pomo-toggle"></i>
+                <span id="text-pomo-toggle">เริ่มจับเวลา</span>
+              </button>
+              <button class="btn-secondary-action" id="btn-pomo-reset" title="รีเซ็ตเวลา">
+                <i data-lucide="rotate-ccw"></i>
+                <span>รีเซ็ต</span>
+              </button>
+            </div>
+
+            <!-- Ambient Sound Bar inside Pomodoro -->
+            <div class="ambient-sound-bar">
+              <div class="ambient-label-group">
+                <i data-lucide="waves" style="width: 16px; height: 16px;"></i>
+                <span>คลื่นเสียงสมาธิ:</span>
+              </div>
+              <div class="sound-chips">
+                <button class="sound-chip active" data-sound-type="none">ปิด</button>
+                <button class="sound-chip" data-sound-type="white">White Noise</button>
+                <button class="sound-chip" data-sound-type="pink">Pink / ฝนตก</button>
+                <button class="sound-chip" data-sound-type="lofi">Lo-fi Hum</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pillar 2 Bento: Daily Study Checklist -->
+        <div class="bento-card col-7">
+          <div class="card-header">
+            <div class="card-title-group">
+              <div class="card-icon-badge badge-mint">
+                <i data-lucide="check-square"></i>
+              </div>
+              <div>
+                <h3 class="card-title">รายการอ่านหนังสือประจำวัน (Daily Study Checklist)</h3>
+                <p class="card-subtitle">เป้าหมายหัวข้อย่อยที่จะลุยให้จบในวันนี้</p>
+              </div>
+            </div>
+            <div class="readiness-label" id="checklist-progress-text">เสร็จ 0/0 รายการ (0%)</div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="checklist-progress-bar-track" style="margin-bottom: 1.15rem;">
+            <div class="progress-fill mint" id="checklist-progress-fill" style="width: 0%;"></div>
+          </div>
+
+                    <!-- Add Checklist Task (Clean 2-tier composer) -->
+          <form class="checklist-composer" id="form-add-checklist-task">
+            <div class="composer-top-row">
+              <div class="composer-category-selector">
+                <span class="composer-field-label">
+                  <i data-lucide="book-open" style="width: 15px; height: 15px;"></i>
+                  <span>เลือกวิชาที่จะอ่าน:</span>
+                </span>
+                <div class="custom-dropdown" id="dropdown-task-category">
+                  <button type="button" class="custom-dropdown-btn" id="btn-dropdown-category" aria-haspopup="listbox" aria-expanded="false" aria-label="เลือกหมวดหมู่วิชา">
+                    <span id="label-selected-category">761311 การลงทุนทางธุรกิจ</span>
+                    <i data-lucide="chevron-down" class="dropdown-chevron-icon"></i>
+                  </button>
+                  <div class="custom-dropdown-popover" role="listbox" id="popover-category-list">
+                <div class="dropdown-group-label">วิชาสอบปัจจุบัน (Final 2569)</div>
+                <div class="dropdown-opt-item selected" role="option" aria-selected="true" data-value="761311 การลงทุนทางธุรกิจ">
+                  <span>761311 การลงทุนทางธุรกิจ</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761361 CRM ลูกค้าสัมพันธ์">
+                  <span>761361 CRM ลูกค้าสัมพันธ์</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761314 การจัดการดำเนินงาน">
+                  <span>761314 การจัดการดำเนินงาน</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761312 โลจิสติกส์ยั่งยืน">
+                  <span>761312 โลจิสติกส์ยั่งยืน</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761313 สถิติสำหรับการวิจัย">
+                  <span>761313 สถิติสำหรับการวิจัย</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-group-label">หมวดวิชาแกนธุรกิจ (Business Core)</div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761101 หลักบัญชีเบื้องต้น">
+                  <span>761101 หลักบัญชีเบื้องต้น</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761111 การบัญชีการเงิน">
+                  <span>761111 การบัญชีการเงิน</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761102 เศรษฐศาสตร์เบื้องต้น">
+                  <span>761102 เศรษฐศาสตร์เบื้องต้น</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761112 เศรษฐศาสตร์ดิจิทัล">
+                  <span>761112 เศรษฐศาสตร์ดิจิทัล</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761201 องค์การและการจัดการ">
+                  <span>761201 องค์การและการจัดการ</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761202 การเงินธุรกิจ">
+                  <span>761202 การเงินธุรกิจ</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761203 หลักการตลาด">
+                  <span>761203 หลักการตลาด</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761204 การจัดการทรัพยากรมนุษย์">
+                  <span>761204 การจัดการทรัพยากรมนุษย์</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761205 กฎหมายธุรกิจและภาษีอากร">
+                  <span>761205 กฎหมายธุรกิจและภาษีอากร</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761206 ระบบสารสนเทศเพื่อการจัดการ">
+                  <span>761206 ระบบสารสนเทศเพื่อการจัดการ (MIS)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761211 ภาษาอังกฤษเพื่อธุรกิจ">
+                  <span>761211 การพัฒนาทักษะภาษาอังกฤษเพื่อธุรกิจ</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-group-label">หมวดวิชาเอกนวัตกรรมทางธุรกิจ (BIM Major)</div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761219 ความคิดสร้างสรรค์และนวัตกรรม">
+                  <span>761219 ความคิดสร้างสรรค์และการจัดการนวัตกรรม</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761212 การเงินผู้ประกอบการและนวัตกรรม">
+                  <span>761212 การเงินผู้ประกอบการและนวัตกรรมทางการเงิน</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761321 นวัตกรรมการตลาดดิจิทัล">
+                  <span>761321 นวัตกรรมการตลาดดิจิทัล</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761322 การวางแผนการตลาด">
+                  <span>761322 การวางแผนและการดำเนินการทางการตลาด</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761323 เทคนิคการเล่าเรื่องธุรกิจ">
+                  <span>761323 เทคนิคการเล่าเรื่องเพื่อธุรกิจ</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761324 การจัดการความเสี่ยง">
+                  <span>761324 การจัดการความเสี่ยงทางธุรกิจและการประกันภัย</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761325 การพยากรณ์ทางธุรกิจ">
+                  <span>761325 การพยากรณ์ทางธุรกิจ</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761326 พฤติกรรมผู้บริโภคดิจิทัล">
+                  <span>761326 พฤติกรรมผู้บริโภคยุคดิจิทัล</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761327 การจัดการสตาร์ทอัพ">
+                  <span>761327 การจัดการสตาร์ทอัพและธุรกิจเกิดใหม่</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761401 การจัดการเชิงกลยุทธ์">
+                  <span>761401 การจัดการเชิงกลยุทธ์</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761491 สัมมนาประเด็นนวัตกรรม">
+                  <span>761491 สัมมนาประเด็นการจัดการนวัตกรรมทางธุรกิจ</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761492 โครงงานนวัตกรรมธุรกิจ">
+                  <span>761492 โครงงานนวัตกรรมทางธุรกิจ</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-group-label">หมวดทั่วไป</div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="ทบทวนทั่วไป">
+                  <span>ทบทวนทั่วไป</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="ทำข้อสอบเก่า Final">
+                  <span>ฝึกทำข้อสอบเก่า Final</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                  </div>
+                  <select id="select-task-category" style="position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0;" tabindex="-1">
+                    <option value="761311 การลงทุนทางธุรกิจ" selected>761311 การลงทุนทางธุรกิจ</option>
+                    <option value="761361 CRM ลูกค้าสัมพันธ์">761361 CRM ลูกค้าสัมพันธ์</option>
+                    <option value="761314 การจัดการดำเนินงาน">761314 การจัดการดำเนินงาน</option>
+                    <option value="761312 โลจิสติกส์ยั่งยืน">761312 โลจิสติกส์ยั่งยืน</option>
+                    <option value="761313 สถิติสำหรับการวิจัย">761313 สถิติสำหรับการวิจัย</option>
+                    <option value="761101 หลักบัญชีเบื้องต้น">761101 หลักบัญชีเบื้องต้น</option>
+                    <option value="761111 การบัญชีการเงิน">761111 การบัญชีการเงิน</option>
+                    <option value="761102 เศรษฐศาสตร์เบื้องต้น">761102 เศรษฐศาสตร์เบื้องต้น</option>
+                    <option value="761112 เศรษฐศาสตร์ดิจิทัล">761112 เศรษฐศาสตร์ดิจิทัล</option>
+                    <option value="761201 องค์การและการจัดการ">761201 องค์การและการจัดการ</option>
+                    <option value="761202 การเงินธุรกิจ">761202 การเงินธุรกิจ</option>
+                    <option value="761203 หลักการตลาด">761203 หลักการตลาด</option>
+                    <option value="761204 การจัดการทรัพยากรมนุษย์">761204 การจัดการทรัพยากรมนุษย์</option>
+                    <option value="761205 กฎหมายธุรกิจและภาษีอากร">761205 กฎหมายธุรกิจและภาษีอากร</option>
+                    <option value="761206 ระบบสารสนเทศเพื่อการจัดการ">761206 ระบบสารสนเทศเพื่อการจัดการ (MIS)</option>
+                    <option value="761211 ภาษาอังกฤษเพื่อธุรกิจ">761211 การพัฒนาทักษะภาษาอังกฤษเพื่อธุรกิจ</option>
+                    <option value="761219 ความคิดสร้างสรรค์และนวัตกรรม">761219 ความคิดสร้างสรรค์และการจัดการนวัตกรรม</option>
+                    <option value="761212 การเงินผู้ประกอบการและนวัตกรรม">761212 การเงินผู้ประกอบการและนวัตกรรมทางการเงิน</option>
+                    <option value="761321 นวัตกรรมการตลาดดิจิทัล">761321 นวัตกรรมการตลาดดิจิทัล</option>
+                    <option value="761322 การวางแผนการตลาด">761322 การวางแผนและการดำเนินการทางการตลาด</option>
+                    <option value="761323 เทคนิคการเล่าเรื่องธุรกิจ">761323 เทคนิคการเล่าเรื่องเพื่อธุรกิจ</option>
+                    <option value="761324 การจัดการความเสี่ยง">761324 การจัดการความเสี่ยงทางธุรกิจและการประกันภัย</option>
+                    <option value="761325 การพยากรณ์ทางธุรกิจ">761325 การพยากรณ์ทางธุรกิจ</option>
+                    <option value="761326 พฤติกรรมผู้บริโภคดิจิทัล">761326 พฤติกรรมผู้บริโภคยุคดิจิทัล</option>
+                    <option value="761327 การจัดการสตาร์ทอัพ">761327 การจัดการสตาร์ทอัพและธุรกิจเกิดใหม่</option>
+                    <option value="761401 การจัดการเชิงกลยุทธ์">761401 การจัดการเชิงกลยุทธ์</option>
+                    <option value="761491 สัมมนาประเด็นนวัตกรรม">761491 สัมมนาประเด็นการจัดการนวัตกรรมทางธุรกิจ</option>
+                    <option value="761492 โครงงานนวัตกรรมธุรกิจ">761492 โครงงานนวัตกรรมทางธุรกิจ</option>
+                    <option value="ทบทวนทั่วไป">ทบทวนทั่วไป</option>
+                    <option value="ทำข้อสอบเก่า Final">ฝึกทำข้อสอบเก่า Final</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 2: Note / Specific chapter & Action button -->
+            <div class="composer-input-row">
+              <div class="composer-input-box">
+                <div class="checklist-input-prefix-icon" aria-hidden="true">
+                  <i data-lucide="edit-3" style="width: 16px; height: 16px;"></i>
+                </div>
+                <input type="text" class="checklist-input" id="input-task-text" placeholder="พิมพ์หัวข้อ / หน้า / บทเรียน (หรือไม่พิมพ์ก็ได้)..." aria-label="พิมพ์หัวข้อหรือบทที่ต้องอ่านวันนี้">
+              </div>
+              <button type="submit" class="btn-add-item" aria-label="เพิ่มรายการอ่าน">
+                <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+                <span>เพิ่มรายการ</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Task List Items -->
+          <div class="task-list" id="daily-checklist-items">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+
+        <!-- Pillar 2 & 4 Bento: Study Hours Logger & Streak Badges -->
+        <div class="bento-card col-5">
+          <div class="card-header">
+            <div class="card-title-group">
+              <div class="card-icon-badge badge-amber">
+                <i data-lucide="award"></i>
+              </div>
+              <div>
+                <h3 class="card-title">ชั่วโมงอ่านสะสม & บันทึกด่วน</h3>
+                <p class="card-subtitle">วินัยสม่ำเสมอสร้างผลลัพธ์ที่ยั่งยืน</p>
+              </div>
+            </div>
+            <button class="card-action-btn" id="btn-open-log-hours-modal">
+              <i data-lucide="sliders-horizontal" style="width: 14px; height: 14px; display: inline-block;"></i>
+              ปรับละเอียด
+            </button>
+          </div>
+
+          <!-- Today Hours vs Target -->
+          <div class="study-hour-stat-row">
+            <div class="hour-stat-col">
+              <span class="hour-stat-val mono-num" id="today-logged-hours">3.5 ชม.</span>
+              <span class="hour-stat-sub">เวลาอ่านจริงวันนี้</span>
+            </div>
+            <div class="hour-stat-col" style="text-align: right;">
+              <span class="hour-stat-val mono-num" id="today-target-hours">4.0 ชม.</span>
+              <span class="hour-stat-sub">เป้าหมายที่ตั้งไว้</span>
+            </div>
+          </div>
+
+          <!-- 1-Tap Instant Hours Logger -->
+          <div class="instant-log-panel">
+            <span class="instant-log-title">แตะบันทึกเวลาทันที (1 คลิก):</span>
+            <div class="quick-chip-container" id="instant-course-selector">
+              <button type="button" class="quick-action-chip active" data-course-code="761311">761311 การลงทุน</button>
+              <button type="button" class="quick-action-chip" data-course-code="761361">761361 CRM</button>
+              <button type="button" class="quick-action-chip" data-course-code="761314">761314 ดำเนินงาน</button>
+              <button type="button" class="quick-action-chip" data-course-code="761312">761312 โลจิสติกส์</button>
+              <button type="button" class="quick-action-chip" data-course-code="761313">761313 สถิติวิจัย</button>
+            </div>
+            <div class="instant-duration-buttons">
+              <button type="button" class="btn-instant-time" data-add-mins="30">+ 30 นาที</button>
+              <button type="button" class="btn-instant-time" data-add-mins="60">+ 1 ชม.</button>
+              <button type="button" class="btn-instant-time" data-add-mins="90">+ 1.5 ชม.</button>
+              <button type="button" class="btn-instant-time" data-add-mins="120">+ 2 ชม.</button>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.15rem; margin-bottom: 0.5rem;">
+            <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.75rem;">
+              เหรียญตราที่ปลดล็อกแล้ว (Study Badges)
+            </span>
+            <div class="badges-grid" id="dashboard-badges-container">
+              <!-- Dynamically populated via JS -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ======================================================================
+         TAB 2: หน้าวางแผน & สถิติ (PLANNER & ANALYTICS)
+         ====================================================================== -->
+    <div class="tab-view" id="tab-planner">
+      <div class="bento-grid">
+        
+        <!-- Feature: Smart Study Splitter (ตัวช่วยแบ่งบทเรียนตามเวลาที่เหลือ) -->
+        <div class="bento-card col-12">
+          <div class="card-header">
+            <div class="card-title-group">
+              <div class="card-icon-badge badge-indigo">
+                <i data-lucide="calculator"></i>
+              </div>
+              <div>
+                <h3 class="card-title">ตัวช่วยแบ่งบทเรียนตามเวลาที่เหลือ (Smart Study Splitter)</h3>
+                <p class="card-subtitle">คำนวณจำนวนบทหรือหน้าที่ต้องอ่านต่อวัน เพื่อให้จบเนื้อหาทันก่อนวันสอบจริง</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="splitter-interactive-panel">
+            <!-- 1. Course Selector Chips -->
+            <div class="splitter-row-block">
+              <span class="form-label" style="display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.5rem;">
+                <i data-lucide="book-open" style="width: 14px; height: 14px; color: var(--primary-600);"></i>
+                1. แตะเลือกวิชาสอบ (ดึงวันสอบจริง & คอนฟิกให้อัตโนมัติ):
+              </span>
+              <div class="quick-chip-container" id="splitter-course-chips">
+                <button type="button" class="quick-action-chip active" data-course-code="761311" data-course-name="761311 BUSINESS INVESTMENT" data-pages="200" data-exam-date="2026-10-27">761311 การลงทุน (27 ต.ค.)</button>
+                <button type="button" class="quick-action-chip" data-course-code="761361" data-course-name="761361 CUSTOMER RELATIONSHIP MANAGEMENT" data-pages="180" data-exam-date="2026-10-28">761361 CRM (28 ต.ค.)</button>
+                <button type="button" class="quick-action-chip" data-course-code="761314" data-course-name="761314 OPERATION MANAGEMENT INNOVATIONS" data-pages="240" data-exam-date="2026-11-03">761314 ดำเนินงาน (03 พ.ย.)</button>
+                <button type="button" class="quick-action-chip" data-course-code="761312" data-course-name="761312 SUSTAINABLE LOGISTICS" data-pages="210" data-exam-date="2026-11-05">761312 โลจิสติกส์ (05 พ.ย.)</button>
+                <button type="button" class="quick-action-chip" data-course-code="761313" data-course-name="761313 STATISTICS FOR RESEARCH" data-pages="260" data-exam-date="2026-11-06">761313 สถิติวิจัย (06 พ.ย.)</button>
+              </div>
+            </div>
+
+            <div class="splitter-form-grid" style="margin-top: 1rem;">
+              <!-- 2. Pages / Chapters with Stepper and Quick Presets -->
+              <div class="form-field">
+                <label class="form-label">2. จำนวนหน้า / บท ทั้งหมด</label>
+                <div class="splitter-stepper-box">
+                  <button type="button" class="stepper-btn" id="btn-splitter-pages-minus" aria-label="ลด 20 หน้า">-</button>
+                  <div style="text-align: center;">
+                    <span class="stepper-val-display mono-num" id="display-splitter-pages">200</span>
+                    <span style="font-size: 0.72rem; color: var(--text-subtle); display: block;">หน้า / สไลด์</span>
+                  </div>
+                  <button type="button" class="stepper-btn" id="btn-splitter-pages-plus" aria-label="เพิ่ม 20 หน้า">+</button>
+                </div>
+                <div class="quick-chip-container" id="splitter-pages-presets" style="margin-top: 0.45rem;">
+                  <button type="button" class="quick-action-chip" data-pages="100">100</button>
+                  <button type="button" class="quick-action-chip active" data-pages="200">200</button>
+                  <button type="button" class="quick-action-chip" data-pages="250">250</button>
+                  <button type="button" class="quick-action-chip" data-pages="300">300</button>
+                </div>
+                <input type="hidden" id="splitter-total-pages" value="200">
+              </div>
+
+              <!-- 3. Days Left with Stepper -->
+              <div class="form-field">
+                <label class="form-label">3. จำนวนวันก่อนสอบ (วัน)</label>
+                <div class="splitter-stepper-box">
+                  <button type="button" class="stepper-btn" id="btn-splitter-days-minus" aria-label="ลด 1 วัน">-</button>
+                  <div style="text-align: center;">
+                    <span class="stepper-val-display mono-num" id="display-splitter-days">15</span>
+                    <span style="font-size: 0.72rem; color: var(--text-subtle); display: block;">วันก่อนสอบ</span>
+                  </div>
+                  <button type="button" class="stepper-btn" id="btn-splitter-days-plus" aria-label="เพิ่ม 1 วัน">+</button>
+                </div>
+                <span style="font-size: 0.72rem; color: var(--text-subtle); margin-top: 0.35rem;" id="splitter-days-subtext">
+                  ดึงจากวันสอบจริงอัตโนมัติ (แตะ +/- ปรับได้)
+                </span>
+                <input type="hidden" id="splitter-days-left" value="15">
+              </div>
+
+              <!-- 4. Buffer Days with Stepper and Quick Presets -->
+              <div class="form-field">
+                <label class="form-label">4. วันสำรองสำหรับทบทวน (Buffer)</label>
+                <div class="splitter-stepper-box">
+                  <button type="button" class="stepper-btn" id="btn-splitter-buffer-minus" aria-label="ลด 1 วัน">-</button>
+                  <div style="text-align: center;">
+                    <span class="stepper-val-display mono-num" id="display-splitter-buffer">3</span>
+                    <span style="font-size: 0.72rem; color: var(--text-subtle); display: block;">วันสำรอง</span>
+                  </div>
+                  <button type="button" class="stepper-btn" id="btn-splitter-buffer-plus" aria-label="เพิ่ม 1 วัน">+</button>
+                </div>
+                <div class="quick-chip-container" id="splitter-buffer-presets" style="margin-top: 0.45rem;">
+                  <button type="button" class="quick-action-chip" data-buffer="1">1 วัน</button>
+                  <button type="button" class="quick-action-chip" data-buffer="2">2 วัน</button>
+                  <button type="button" class="quick-action-chip active" data-buffer="3">3 วัน</button>
+                  <button type="button" class="quick-action-chip" data-buffer="5">5 วัน</button>
+                </div>
+                <input type="hidden" id="splitter-buffer-days" value="3">
+              </div>
+            </div>
+          </div>
+
+          <div class="splitter-output-box" style="margin-top: 1.25rem;">
+            <div>
+              <span style="font-size: 0.85rem; font-weight: 600; color: var(--primary-700); text-transform: uppercase;">
+                ผลการวางแผนที่แนะนำ:
+              </span>
+              <p class="splitter-highlight-text" id="splitter-result-text">
+                ควรอ่านวันละ <strong>17 หน้า</strong> เป็นเวลา 12 วันแรก และเหลือ 3 วันสุดท้ายไว้ทำข้อสอบเก่า & เก็งจุดผิด
+              </p>
+            </div>
+            <div style="text-align: right;">
+              <span class="splitter-stat-big mono-num" id="splitter-stat-daily">17 หน้า / วัน</span>
+              <span style="display: block; font-size: 0.78rem; color: var(--primary-600); font-weight: 500;">
+                (ประมาณ 1.5 - 2 ชั่วโมงต่อวัน)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature: Subject Confidence Matrix (ประเมินความมั่นใจรายวิชา 1-5 ดาว) -->
+        <div class="bento-card col-7">
+          <div class="card-header">
+            <div class="card-title-group">
+              <div class="card-icon-badge badge-rose">
+                <i data-lucide="crosshair"></i>
+              </div>
+              <div>
+                <h3 class="card-title">เมทริกซ์ประเมินความมั่นใจรายวิชา (Confidence Matrix)</h3>
+                <p class="card-subtitle">ให้คะแนนความเข้าใจ (1–5 ดาว) เพื่อเน้นทบทวนจุดอ่อนที่ยังไม่แม่นยำ</p>
+              </div>
+            </div>
+          </div>
+
+          <table class="confidence-table">
+            <thead>
+              <tr style="text-align: left; font-size: 0.76rem; color: var(--text-subtle); text-transform: uppercase;">
+                <th style="padding: 0 1rem 0.5rem;">รหัส & รายวิชา</th>
+                <th style="padding: 0 1rem 0.5rem;">ระดับความมั่นใจ</th>
+                <th style="padding: 0 1rem 0.5rem;">สถานะจุดอ่อน</th>
+              </tr>
+            </thead>
+            <tbody id="confidence-matrix-body">
+              <!-- Dynamically populated via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Weekly Study Hours Analytics Chart -->
+        <div class="bento-card col-5">
+          <div class="card-header">
+            <div class="card-title-group">
+              <div class="card-icon-badge badge-mint">
+                <i data-lucide="bar-chart-3"></i>
+              </div>
+              <div>
+                <h3 class="card-title">สถิติชั่วโมงอ่านหนังสือรายสัปดาห์</h3>
+                <p class="card-subtitle">เปรียบเทียบเวลาที่อ่านจริงในรอบ 7 วัน</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Custom Pure CSS/HTML Weekly Bar Chart -->
+          <div class="weekly-chart-wrapper" id="weekly-analytics-chart">
+            <!-- Dynamically populated via JS -->
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px dashed var(--border-light); font-size: 0.82rem; color: var(--text-subtle);">
+            <span>รวมสัปดาห์นี้: <strong class="mono-num" style="color: var(--text-main);" id="weekly-total-hours">22.5 ชม.</strong></span>
+            <span>เฉลี่ยวันละ: <strong class="mono-num" style="color: var(--primary-600);" id="weekly-avg-hours">3.2 ชม.</strong></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ======================================================================
+       MODAL 1: เพิ่มวันสอบ (Add Exam Modal)
+       ====================================================================== -->
+  <div class="modal-backdrop" id="modal-add-exam">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h4 class="modal-title">เพิ่มวิชาและวันสอบมหาวิทยาลัย</h4>
+        <button class="modal-close-btn" id="btn-close-exam-modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="form-add-exam">
+        <div class="modal-body">
+
+          <div class="form-field">
+            <label class="form-label" id="label-for-preset-course">เลือกวิชาจากหลักสูตรนวัตกรรมธุรกิจ ม.ศิลปากร (ปี 1 - 4)</label>
+            <div class="custom-dropdown" id="dropdown-preset-course">
+              <button type="button" class="custom-dropdown-btn" id="btn-dropdown-preset-course" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="label-for-preset-course">
+                <span id="label-selected-preset-course">-- เลือกวิชาจากหลักสูตร หรือกรอกเอง --</span>
+                <i data-lucide="chevron-down" class="dropdown-chevron-icon"></i>
+              </button>
+              <div class="custom-dropdown-popover" role="listbox" id="popover-preset-course-list">
+                <div class="dropdown-group-label">วิชาสอบปัจจุบัน (Final 2569)</div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761311">
+                  <span>761311-166B BUSINESS INVESTMENT (27 ต.ค.)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761361">
+                  <span>761361-166B CRM (28 ต.ค.)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761314">
+                  <span>761314-166B OPERATION MANAGEMENT (03 พ.ย.)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761312">
+                  <span>761312-166B SUSTAINABLE LOGISTICS (05 พ.ย.)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761313">
+                  <span>761313-166B STATISTICS FOR RESEARCH (06 พ.ย.)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+
+                <div class="dropdown-group-label">หมวดวิชาแกนธุรกิจ (Business Core)</div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761101">
+                  <span>761101 หลักบัญชีเบื้องต้น (Basic Accounting)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761111">
+                  <span>761111 การบัญชีการเงิน (Financial Accounting)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761102">
+                  <span>761102 เศรษฐศาสตร์เบื้องต้น (Basic Economics)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761112">
+                  <span>761112 เศรษฐศาสตร์ดิจิทัล (Digital Economics)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761201">
+                  <span>761201 องค์การและการจัดการ (Organization and Management)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761202">
+                  <span>761202 การเงินธุรกิจ (Business Finance)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761203">
+                  <span>761203 หลักการตลาด (Principles of Marketing)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761204">
+                  <span>761204 การจัดการทรัพยากรมนุษย์ (Human Resource Management)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761205">
+                  <span>761205 กฎหมายธุรกิจและภาษีอากร (Business Law and Taxation)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761206">
+                  <span>761206 ระบบสารสนเทศเพื่อการจัดการ (MIS)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761211">
+                  <span>761211 การพัฒนาทักษะภาษาอังกฤษเพื่อธุรกิจ (Business English)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+
+                <div class="dropdown-group-label">หมวดวิชาเอกนวัตกรรมทางธุรกิจ (BIM Major)</div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761219">
+                  <span>761219 ความคิดสร้างสรรค์และการจัดการนวัตกรรมทางธุรกิจ</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761212">
+                  <span>761212 การเงินผู้ประกอบการและนวัตกรรมทางการเงิน</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761321">
+                  <span>761321 นวัตกรรมการตลาดดิจิทัล (Digital Marketing Innovation)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761322">
+                  <span>761322 การวางแผนและการดำเนินการทางการตลาด</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761323">
+                  <span>761323 เทคนิคการเล่าเรื่องเพื่อธุรกิจ (Storytelling Techniques)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761324">
+                  <span>761324 การจัดการความเสี่ยงทางธุรกิจและการประกันภัย</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761325">
+                  <span>761325 การพยากรณ์ทางธุรกิจ (Business Forecasting)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761326">
+                  <span>761326 พฤติกรรมผู้บริโภคยุคดิจิทัล (Digital Consumer Behavior)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761327">
+                  <span>761327 การจัดการสตาร์ทอัพและธุรกิจเกิดใหม่</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761401">
+                  <span>761401 การจัดการเชิงกลยุทธ์ (Strategic Management)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761491">
+                  <span>761491 สัมมนาประเด็นการจัดการนวัตกรรมทางธุรกิจ</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="761492">
+                  <span>761492 โครงงานนวัตกรรมทางธุรกิจ (Business Innovation Project)</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+                <div class="dropdown-opt-item" role="option" aria-selected="false" data-value="custom">
+                  <span>-- กรอกวิชาและวันสอบเอง (Custom) --</span>
+                  <i data-lucide="check" class="opt-check-icon"></i>
+                </div>
+              </div>
+              <input type="hidden" id="select-preset-course" value="">
+            </div>
+          <div class="form-field">
+            <label class="form-label" for="input-exam-code">รหัสวิชา (Course Code)</label>
+            <input type="text" class="form-control" id="input-exam-code" placeholder="เช่น 761311-166B" required>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="input-exam-title-en">ชื่อวิชาภาษาอังกฤษ (Course Title EN)</label>
+            <input type="text" class="form-control" id="input-exam-title-en" placeholder="เช่น BUSINESS INVESTMENT" required>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="input-exam-title-th">ชื่อวิชาภาษาไทย (Course Title TH)</label>
+            <input type="text" class="form-control" id="input-exam-title-th" placeholder="เช่น การลงทุนทางธุรกิจ">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="input-exam-schedule">ประเภทและเวลาสอบ (Exam Type & Time)</label>
+            <input type="text" class="form-control" id="input-exam-schedule" placeholder="เช่น FINAL1 Lec | อาคาร ห้อง 27 ต.ค. 2569 13:00 - 16:00">
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="input-exam-date">วันสอบจริง</label>
+            <input type="date" class="form-control" id="input-exam-date" required>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="input-exam-readiness">ระดับความพร้อมเริ่มต้น (0 - 100%)</label>
+            <input type="number" class="form-control" id="input-exam-readiness" min="0" max="100" value="50">
+          </div>
+        </div>
+        <div class="modal-footer" id="modal-exam-footer">
+          <button type="button" class="btn-secondary-action" id="btn-cancel-exam-modal">ยกเลิก</button>
+          <button type="submit" class="btn-primary-action">
+            <i data-lucide="plus"></i>
+            <span>เพิ่มวิชาสอบ</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       MODAL 2: บันทึกเวลาอ่านหนังสือ (Log Study Hours Modal)
+       ====================================================================== -->
+  <div class="modal-backdrop" id="modal-log-hours">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h4 class="modal-title">บันทึกเวลาอ่านหนังสือสะสม</h4>
+        <button class="modal-close-btn" id="btn-close-log-modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="form-log-study-hours">
+        <div class="modal-body">
+          <div class="form-field" style="margin-bottom: 0.85rem;">
+            <label class="form-label">
+              <i data-lucide="book-open" style="width: 14px; height: 14px; color: var(--primary-600); display: inline-block; vertical-align: middle;"></i>
+              เลือกวิชาที่อ่าน:
+            </label>
+            <div class="quick-chip-container" id="modal-log-course-chips" style="margin-bottom: 0.5rem;">
+              <button type="button" class="quick-action-chip active" data-subject="761311 การลงทุนทางธุรกิจ">761311 การลงทุน</button>
+              <button type="button" class="quick-action-chip" data-subject="761361 CRM ลูกค้าสัมพันธ์">761361 CRM</button>
+              <button type="button" class="quick-action-chip" data-subject="761314 การจัดการดำเนินงาน">761314 ดำเนินงาน</button>
+              <button type="button" class="quick-action-chip" data-subject="761312 โลจิสติกส์ยั่งยืน">761312 โลจิสติกส์</button>
+              <button type="button" class="quick-action-chip" data-subject="761313 สถิติสำหรับการวิจัย">761313 สถิติวิจัย</button>
+            </div>
+            <input type="text" class="form-control" id="input-log-subject-name" value="761311 การลงทุนทางธุรกิจ" required>
+          </div>
+
+          <div class="form-field" style="margin-bottom: 0.85rem;">
+            <label class="form-label">
+              <i data-lucide="clock" style="width: 14px; height: 14px; color: var(--amber-500); display: inline-block; vertical-align: middle;"></i>
+              ระบุชั่วโมงที่อ่าน:
+            </label>
+            <div class="instant-duration-buttons" id="modal-log-hour-chips" style="margin-bottom: 0.5rem;">
+              <button type="button" class="btn-instant-time" data-hours="0.5">+ 30 นาที</button>
+              <button type="button" class="btn-instant-time active" data-hours="1.0">+ 1 ชม.</button>
+              <button type="button" class="btn-instant-time" data-hours="1.5">+ 1.5 ชม.</button>
+              <button type="button" class="btn-instant-time" data-hours="2.0">+ 2 ชม.</button>
+              <button type="button" class="btn-instant-time" data-hours="3.0">+ 3 ชม.</button>
+            </div>
+            <input type="number" class="form-control" id="input-log-hours" step="0.5" min="0.5" max="24" value="1.0" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary-action" id="btn-cancel-log-modal">ยกเลิก</button>
+          <button type="submit" class="btn-primary-action">
+            <i data-lucide="check"></i>
+            <span>บันทึกชั่วโมง</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification element -->
+  <div class="toast-notice" id="app-toast-notice">
+    <i data-lucide="check-circle" id="toast-icon"></i>
+    <span id="toast-message-text">ทำรายการสำเร็จ</span>
+  </div>
+
+  <!-- Main JavaScript Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
